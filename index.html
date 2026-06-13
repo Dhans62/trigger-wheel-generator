@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trigger Wheel Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0f0e;--surface:#141714;--panel:#1a1d1a;--border:#2a2e2a;
+  --accent:#c8f135;--accent-dim:#8aaa22;--accent-faint:rgba(200,241,53,0.07);
+  --text:#e8ede8;--text-dim:#7a8a7a;--text-faint:#3a4a3a;
+  --red:#ff4d4d;--orange:#ff9a3c;--blue:#3a8fff;
+  --mono:'Share Tech Mono',monospace;--sans:'Barlow Condensed',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* HEADER */
+header{border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:12px;background:var(--surface);flex-shrink:0;}
+.logo-mark{width:26px;height:26px;border:2px solid var(--accent);border-radius:50%;position:relative;flex-shrink:0;}
+.logo-mark::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:6px;height:6px;background:var(--accent);border-radius:50%;}
+.logo-mark::after{content:'';position:absolute;top:50%;left:100%;transform:translateY(-50%);width:7px;height:2px;background:var(--accent);}
+header h1{font-family:var(--sans);font-weight:700;font-size:15px;letter-spacing:.12em;text-transform:uppercase;}
+header h1 span{color:var(--accent);}
+.header-tag{margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--text-dim);border:1px solid var(--border);padding:2px 7px;}
+
+/* APP */
+.app{display:flex;flex:1;overflow:hidden;}
+
+/* TAB SIDEBAR */
+.sidebar{width:295px;flex-shrink:0;border-right:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;overflow:hidden;}
+
+/* Tab nav */
+.tab-nav{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border);flex-shrink:0;}
+.tab-btn{background:transparent;border:none;border-right:1px solid var(--border);color:var(--text-dim);font-family:var(--mono);font-size:9px;padding:9px 4px;cursor:pointer;text-align:center;letter-spacing:.05em;text-transform:uppercase;transition:all .12s;line-height:1.3;}
+.tab-btn:last-child{border-right:none;}
+.tab-btn.active{color:var(--accent);background:var(--accent-faint);border-bottom:2px solid var(--accent);}
+.tab-btn:hover:not(.active){color:var(--text);background:rgba(255,255,255,.03);}
+
+/* Tab panels */
+.tab-panels{flex:1;overflow-y:auto;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* Section */
+.section{border-bottom:1px solid var(--border);padding:14px;}
+.section-label{font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.field{margin-bottom:10px;}
+.field:last-child{margin-bottom:0;}
+label{display:block;font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px;}
+input[type="number"],select{width:100%;background:var(--panel);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:6px 8px;outline:none;transition:border-color .15s;-moz-appearance:textfield;}
+input[type="number"]::-webkit-outer-spin-button,input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;}
+input[type="number"]:focus,select:focus{border-color:var(--accent);background:rgba(200,241,53,.04);}
+select{cursor:pointer;}select option{background:var(--panel);}
+.range-row{display:flex;align-items:center;gap:7px;}
+input[type="range"]{flex:1;padding:0;height:4px;border:none;background:var(--border);cursor:pointer;-webkit-appearance:none;border-radius:2px;outline:none;}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;background:var(--accent);border-radius:50%;cursor:pointer;}
+.range-val{font-family:var(--mono);font-size:11px;color:var(--accent);min-width:36px;text-align:right;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+
+/* Presets */
+.preset-btn{background:var(--panel);border:1px solid var(--border);color:var(--text-dim);font-family:var(--mono);font-size:10px;padding:6px 3px;cursor:pointer;text-align:center;transition:all .12s;}
+.preset-btn:hover,.preset-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-faint);}
+
+/* Toggle */
+.toggle-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;}
+.toggle-row:last-child{margin-bottom:0;}
+.toggle-label{font-size:10px;font-weight:600;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;}
+.toggle{width:32px;height:17px;background:var(--border);border-radius:9px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--accent);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;background:var(--bg);border-radius:50%;transition:left .2s;}
+.toggle.on::after{left:17px;}
+
+/* Info box */
+.info-box{background:var(--accent-faint);border:1px solid rgba(200,241,53,.18);padding:9px;}
+.info-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;font-size:10px;}
+.info-row:last-child{margin-bottom:0;}
+.info-key{color:var(--text-dim);letter-spacing:.05em;text-transform:uppercase;font-size:9px;}
+.info-val{font-family:var(--mono);color:var(--accent);font-size:11px;}
+.info-val.orange{color:var(--orange);}
+.info-val.red{color:var(--red);}
+
+/* Waveform */
+#waveform-canvas{width:100%;height:65px;background:var(--panel);border:1px solid var(--border);display:block;}
+.wf-labels{margin-top:5px;font-family:var(--mono);font-size:9px;color:var(--text-dim);display:flex;justify-content:space-between;}
+.wf-labels span{color:var(--accent);}
+.wf-labels .gap-val{color:var(--red);}
+
+/* Calc result */
+.calc-result{background:rgba(255,154,60,.08);border:1px solid rgba(255,154,60,.22);padding:9px;margin-top:7px;}
+.calc-result .info-val{color:var(--orange);}
+
+/* Buttons */
+.btn{display:block;width:100%;padding:9px;text-align:center;font-family:var(--sans);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border:none;transition:all .15s;margin-bottom:6px;}
+.btn:last-child{margin-bottom:0;}
+.btn-primary{background:var(--accent);color:#0d0f0e;}
+.btn-primary:hover{background:#d9ff3d;}
+.btn-secondary{background:transparent;border:1px solid var(--border);color:var(--text-dim);}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+.btn-blue{background:#2253cc;color:#fff;}
+.btn-blue:hover{background:#3a6aff;}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.btn-row .btn{margin-bottom:0;}
+
+/* Warning */
+.warn-box{background:rgba(255,77,77,.09);border:1px solid rgba(255,77,77,.28);padding:8px;font-family:var(--mono);font-size:9px;color:var(--red);margin-top:7px;line-height:1.5;}
+
+/* Spoke pattern buttons */
+.pattern-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;}
+.pattern-btn{background:var(--panel);border:2px solid var(--border);color:var(--text-dim);font-family:var(--mono);font-size:9px;padding:8px 4px;cursor:pointer;text-align:center;transition:all .12s;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.pattern-btn svg{display:block;}
+.pattern-btn:hover,.pattern-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-faint);}
+.pattern-btn.active-none{border-color:var(--text-faint);color:var(--text-faint);}
+
+/* Hole list */
+.hole-list{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.hole-item{background:var(--panel);border:1px solid var(--border);padding:8px 9px;display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;}
+.hole-item-info{flex:1;color:var(--text-dim);}
+.hole-item-info strong{color:var(--text);font-size:11px;}
+.hole-del{background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:0 2px;line-height:1;opacity:.7;}
+.hole-del:hover{opacity:1;}
+
+/* Export tab */
+.export-section{padding:14px;border-bottom:1px solid var(--border);}
+
+/* CANVAS */
+.canvas-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.canvas-toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:7px 14px;display:flex;align-items:center;gap:9px;flex-shrink:0;}
+.tool-btn{background:var(--panel);border:1px solid var(--border);color:var(--text-dim);font-family:var(--mono);font-size:10px;padding:4px 9px;cursor:pointer;transition:all .12s;}
+.tool-btn:hover{border-color:var(--accent);color:var(--accent);}
+.zoom-val{font-family:var(--mono);font-size:10px;color:var(--text-dim);min-width:38px;}
+.canvas-area{flex:1;overflow:hidden;position:relative;cursor:grab;}
+.canvas-area.grabbing{cursor:grabbing;}
+.canvas-area::before{content:'';position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.28;pointer-events:none;}
+#svg-viewport{position:absolute;top:0;left:0;transform-origin:0 0;}
+#wheel-svg{display:block;filter:drop-shadow(0 0 28px rgba(200,241,53,.07));}
+.statusbar{background:var(--surface);border-top:1px solid var(--border);padding:6px 14px;display:flex;gap:18px;font-family:var(--mono);font-size:9px;color:var(--text-dim);flex-shrink:0;flex-wrap:wrap;}
+.status-item span{color:var(--accent);}
+.field-disabled{opacity:.35;pointer-events:none;}
+
+@media(max-width:700px){
+  .app{flex-direction:column;}
+  .sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border);max-height:52vh;}
+  .canvas-wrap{min-height:48vh;}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-mark"></div>
+  <h1>Trigger <span>Wheel</span> Generator</h1>
+  <div class="header-tag">v3.0</div>
+</header>
+
+<div class="app">
+<aside class="sidebar">
+  <!-- TAB NAV -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('generator',this)">GEN</button>
+    <button class="tab-btn" onclick="switchTab('body',this)">BODY</button>
+    <button class="tab-btn" onclick="switchTab('holes',this)">HOLES</button>
+    <button class="tab-btn" onclick="switchTab('export',this)">EXPORT</button>
+  </div>
+
+  <div class="tab-panels">
+
+  <!-- ══ TAB: GENERATOR ══ -->
+  <div class="tab-panel active" id="tab-generator">
+
+    <div class="section">
+      <div class="section-label">Presets</div>
+      <div class="three-col">
+        <button class="preset-btn active" onclick="applyPreset(12,1,this)">12-1</button>
+        <button class="preset-btn" onclick="applyPreset(24,1,this)">24-1</button>
+        <button class="preset-btn" onclick="applyPreset(36,1,this)">36-1</button>
+        <button class="preset-btn" onclick="applyPreset(60,2,this)">60-2</button>
+        <button class="preset-btn" onclick="applyPreset(36,2,this)">36-2</button>
+        <button class="preset-btn" onclick="applyPreset(4,1,this)">4-1</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Wheel Config</div>
+      <div class="field two-col">
+        <div><label>Total Teeth</label><input type="number" id="totalTeeth" value="12" min="3" max="120" oninput="update()"></div>
+        <div><label>Missing</label><input type="number" id="missingTeeth" value="1" min="1" max="10" oninput="update()"></div>
+      </div>
+      <div class="field">
+        <label>Gap Position</label>
+        <div class="range-row">
+          <input type="range" id="gapPosition" min="0" max="359" value="0" oninput="update()">
+          <span class="range-val" id="gapPosVal">0°</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Tooth Width Ratio</label>
+        <div class="range-row">
+          <input type="range" id="toothRatio" min="20" max="80" value="50" oninput="update()">
+          <span class="range-val" id="toothRatioVal">50%</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Rotation Direction</label>
+        <select id="rotDir" onchange="update()">
+          <option value="cw">Clockwise (CW)</option>
+          <option value="ccw">Counter-Clockwise (CCW)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Dimensions</div>
+      <div class="toggle-row" style="margin-bottom:10px">
+        <span class="toggle-label">Full Plate Mode</span>
+        <div class="toggle" id="tog-fullmode" onclick="toggleFullMode()"></div>
+      </div>
+      <div id="field-od-normal" class="field">
+        <label>Outer Diameter / Tip (mm)</label>
+        <input type="number" id="outerDiam" value="75" min="20" max="500" oninput="update()">
+      </div>
+      <div id="field-od-plate" class="field" style="display:none">
+        <label>Plate OD — ukuran plat mentah (mm)</label>
+        <input type="number" id="plateDiam" value="75" min="20" max="500" oninput="update()">
+      </div>
+      <div class="field two-col">
+        <div><label>Tooth Height (mm)</label><input type="number" id="toothHeight" value="4" min="1" max="40" oninput="update()"></div>
+        <div id="bore-field"><label>Bore Ø (mm)</label><input type="number" id="boreDiam" value="20" min="3" max="200" oninput="update()"></div>
+      </div>
+      <div id="fullmode-info" style="display:none">
+        <div class="info-box" style="border-color:rgba(255,154,60,.28);background:rgba(255,154,60,.06)">
+          <div class="info-row"><span class="info-key">Plate OD</span><span class="info-val orange" id="fm-plate">75mm</span></div>
+          <div class="info-row"><span class="info-key">Body Disc</span><span class="info-val orange" id="fm-body">67mm</span></div>
+          <div class="info-row"><span class="info-key">Tooth Tip OD</span><span class="info-val" id="fm-tip">75mm</span></div>
+        </div>
+        <div id="warn-tooth" class="warn-box" style="display:none"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Display</div>
+      <div class="toggle-row"><span class="toggle-label">TDC Marker</span><div class="toggle on" id="tog-tdc" onclick="toggleOpt('tdc')"></div></div>
+      <div class="toggle-row"><span class="toggle-label">Tooth Numbers</span><div class="toggle on" id="tog-nums" onclick="toggleOpt('nums')"></div></div>
+      <div class="toggle-row"><span class="toggle-label">Degree Marks</span><div class="toggle" id="tog-deg" onclick="toggleOpt('deg')"></div></div>
+      <div class="toggle-row"><span class="toggle-label">Direction Arrow</span><div class="toggle on" id="tog-dir" onclick="toggleOpt('dir')"></div></div>
+      <div class="toggle-row"><span class="toggle-label">Sensor Reference</span><div class="toggle" id="tog-sensor" onclick="toggleOpt('sensor')"></div></div>
+      <div class="toggle-row"><span class="toggle-label">Bore Hole</span><div class="toggle on" id="tog-bore" onclick="toggleOpt('bore')"></div></div>
+      <div class="toggle-row"><span class="toggle-label">Light BG (Print)</span><div class="toggle" id="tog-light" onclick="toggleOpt('light')"></div></div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Signal Waveform</div>
+      <canvas id="waveform-canvas" width="500" height="65"></canvas>
+      <div class="wf-labels">
+        <span>HIGH: <span id="wf-high">15.0°</span></span>
+        <span>LOW: <span id="wf-low">15.0°</span></span>
+        <span class="gap-val">GAP: <span id="wf-gap" style="color:var(--red)">45.0°</span></span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Trigger Angle Calc</div>
+      <div class="field">
+        <label>Sensor Offset from TDC (°)</label>
+        <div class="range-row">
+          <input type="range" id="sensorOffset" min="0" max="359" value="90" oninput="updateTriggerCalc()">
+          <span class="range-val" id="sensorOffsetVal">90°</span>
+        </div>
+      </div>
+      <div class="calc-result">
+        <div class="info-row"><span class="info-key">Trigger Angle (ECU)</span><span class="info-val" id="triggerAngle">90.00°</span></div>
+        <div class="info-row"><span class="info-key">Tooth After Gap</span><span class="info-val" id="toothAfterGap">—</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Calculated</div>
+      <div class="info-box">
+        <div class="info-row"><span class="info-key">Tooth Spacing</span><span class="info-val" id="calc-spacing">30.00°</span></div>
+        <div class="info-row"><span class="info-key">Gap Angle</span><span class="info-val" id="calc-gap">60.00°</span></div>
+        <div class="info-row"><span class="info-key">Actual Teeth</span><span class="info-val" id="calc-actual">11</span></div>
+        <div class="info-row"><span class="info-key">Circumference</span><span class="info-val" id="calc-circ">235.62mm</span></div>
+        <div class="info-row"><span class="info-key">HIGH pulse</span><span class="info-val" id="calc-high">15.00°</span></div>
+        <div class="info-row"><span class="info-key">LOW gap</span><span class="info-val" id="calc-low">15.00°</span></div>
+        <div class="info-row" id="calc-bodydisc-row" style="display:none"><span class="info-key">Body Disc OD</span><span class="info-val orange" id="calc-bodydisc">67mm</span></div>
+      </div>
+    </div>
+
+  </div><!-- /tab-generator -->
+
+  <!-- ══ TAB: BODY & SPOKE ══ -->
+  <div class="tab-panel" id="tab-body">
+
+    <div class="section">
+      <div class="section-label">Cutout Pattern</div>
+      <div class="pattern-grid">
+        <button class="pattern-btn active-none active" id="pat-none" onclick="setPattern('none',this)">
+          <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="16" cy="16" r="4" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+          SOLID
+        </button>
+        <button class="pattern-btn" id="pat-spoke3" onclick="setPattern('spoke3',this)">
+          <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="16" cy="16" r="4" fill="none" stroke="currentColor" stroke-width="1"/><line x1="16" y1="5" x2="16" y2="12" stroke="currentColor" stroke-width="2"/><line x1="6.5" y1="21.5" x2="12" y2="18" stroke="currentColor" stroke-width="2"/><line x1="25.5" y1="21.5" x2="20" y2="18" stroke="currentColor" stroke-width="2"/></svg>
+          3 SPOKE
+        </button>
+        <button class="pattern-btn" id="pat-spoke4" onclick="setPattern('spoke4',this)">
+          <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="16" cy="16" r="4" fill="none" stroke="currentColor" stroke-width="1"/><line x1="16" y1="5" x2="16" y2="12" stroke="currentColor" stroke-width="2"/><line x1="16" y1="20" x2="16" y2="27" stroke="currentColor" stroke-width="2"/><line x1="5" y1="16" x2="12" y2="16" stroke="currentColor" stroke-width="2"/><line x1="20" y1="16" x2="27" y2="16" stroke="currentColor" stroke-width="2"/></svg>
+          4 SPOKE
+        </button>
+        <button class="pattern-btn" id="pat-spoke5" onclick="setPattern('spoke5',this)">
+          <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="16" cy="16" r="4" fill="none" stroke="currentColor" stroke-width="1"/><line x1="16" y1="5" x2="16" y2="12" stroke="currentColor" stroke-width="2"/><line x1="7" y1="11" x2="12" y2="14" stroke="currentColor" stroke-width="2"/><line x1="25" y1="11" x2="20" y2="14" stroke="currentColor" stroke-width="2"/><line x1="10" y1="25" x2="13.5" y2="19" stroke="currentColor" stroke-width="2"/><line x1="22" y1="25" x2="18.5" y2="19" stroke="currentColor" stroke-width="2"/></svg>
+          5 SPOKE
+        </button>
+        <button class="pattern-btn" id="pat-spoke6" onclick="setPattern('spoke6',this)">
+          <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="16" cy="16" r="4" fill="none" stroke="currentColor" stroke-width="1"/><line x1="16" y1="5" x2="16" y2="12" stroke="currentColor" stroke-width="2"/><line x1="16" y1="20" x2="16" y2="27" stroke="currentColor" stroke-width="2"/><line x1="7" y1="10.5" x2="12" y2="13.5" stroke="currentColor" stroke-width="2"/><line x1="20" y1="18.5" x2="25" y2="21.5" stroke="currentColor" stroke-width="2"/><line x1="25" y1="10.5" x2="20" y2="13.5" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18.5" x2="7" y2="21.5" stroke="currentColor" stroke-width="2"/></svg>
+          6 SPOKE
+        </button>
+        <button class="pattern-btn" id="pat-oval" onclick="setPattern('oval',this)">
+          <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="16" cy="16" r="4" fill="none" stroke="currentColor" stroke-width="1"/><ellipse cx="16" cy="9" rx="3" ry="2" fill="none" stroke="currentColor" stroke-width="1.2"/><ellipse cx="23" cy="21" rx="3" ry="2" fill="none" stroke="currentColor" stroke-width="1.2" transform="rotate(-60,23,21)"/><ellipse cx="9" cy="21" rx="3" ry="2" fill="none" stroke="currentColor" stroke-width="1.2" transform="rotate(60,9,21)"/></svg>
+          OVAL
+        </button>
+      </div>
+
+      <div id="spoke-options" style="display:none">
+        <div class="field">
+          <label>Spoke Width (mm)</label>
+          <div class="range-row">
+            <input type="range" id="spokeWidth" min="3" max="20" value="8" oninput="update()">
+            <span class="range-val" id="spokeWidthVal">8mm</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Corner Radius (mm)</label>
+          <div class="range-row">
+            <input type="range" id="spokeRadius" min="0" max="10" value="2" oninput="update()">
+            <span class="range-val" id="spokeRadiusVal">2mm</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Spoke Offset Angle (°)</label>
+          <div class="range-row">
+            <input type="range" id="spokeOffset" min="0" max="359" value="0" oninput="update()">
+            <span class="range-val" id="spokeOffsetVal">0°</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="oval-options" style="display:none">
+        <div class="field two-col">
+          <div><label>Count</label><input type="number" id="ovalCount" value="3" min="2" max="12" oninput="update()"></div>
+          <div><label>Oval Ratio</label>
+            <div class="range-row" style="margin-top:4px">
+              <input type="range" id="ovalRatio" min="20" max="80" value="45" oninput="update()">
+              <span class="range-val" id="ovalRatioVal">45%</span>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Oval Offset Angle (°)</label>
+          <div class="range-row">
+            <input type="range" id="ovalOffset" min="0" max="359" value="0" oninput="update()">
+            <span class="range-val" id="ovalOffsetVal">0°</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Weight Estimate</div>
+      <div class="info-box">
+        <div class="info-row"><span class="info-key">Material</span>
+          <select id="materialSel" onchange="update()" style="width:auto;font-size:10px;padding:2px 5px;border:none;background:transparent;color:var(--accent)">
+            <option value="7.85">Mild Steel</option>
+            <option value="7.7">Stainless</option>
+            <option value="2.7">Aluminium</option>
+          </select>
+        </div>
+        <div class="info-row"><span class="info-key">Disc Volume</span><span class="info-val" id="wt-vol">—</span></div>
+        <div class="info-row"><span class="info-key">Est. Weight</span><span class="info-val" id="wt-mass">—</span></div>
+        <div class="info-row"><span class="info-key">After Cutout</span><span class="info-val" id="wt-cut">—</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Min Wall Check</div>
+      <div class="info-box">
+        <div class="info-row"><span class="info-key">Inner → Spoke</span><span class="info-val" id="wall-inner">—</span></div>
+        <div class="info-row"><span class="info-key">Spoke → Outer</span><span class="info-val" id="wall-outer">—</span></div>
+      </div>
+      <div id="warn-wall" class="warn-box" style="display:none">Spoke terlalu lebar — sisa material tipis, berisiko retak.</div>
+    </div>
+
+  </div><!-- /tab-body -->
+
+  <!-- ══ TAB: HOLES ══ -->
+  <div class="tab-panel" id="tab-holes">
+
+    <div class="section">
+      <div class="section-label">Mounting Holes (Auto)</div>
+      <div class="field two-col">
+        <div><label>Count</label><input type="number" id="mountCount" value="0" min="0" max="12" oninput="update()"></div>
+        <div><label>Ø (mm)</label><input type="number" id="mountDiam" value="5" min="2" max="30" oninput="update()"></div>
+      </div>
+      <div class="field"><label>PCD (mm)</label><input type="number" id="mountPCD" value="50" min="10" max="400" oninput="update()"></div>
+      <div class="field"><label>Type</label>
+        <select id="mountType" onchange="update()">
+          <option value="through">Through Hole</option>
+          <option value="tapped">Tapped (M-thread)</option>
+          <option value="cbore">Counterbore</option>
+          <option value="csink">Countersink</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Custom Holes</div>
+      <div class="hole-list" id="hole-list">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text-faint);text-align:center;padding:8px">No custom holes</div>
+      </div>
+      <div class="field two-col">
+        <div><label>Radius (mm)</label><input type="number" id="holeR" value="25" min="1" max="300" placeholder="from center"></div>
+        <div><label>Angle (°)</label><input type="number" id="holeAngle" value="0" min="0" max="359"></div>
+      </div>
+      <div class="field two-col">
+        <div><label>Ø (mm)</label><input type="number" id="holeDiam" value="5" min="1" max="50"></div>
+        <div><label>Type</label>
+          <select id="holeType" style="font-size:11px;padding:5px 6px">
+            <option value="through">Through</option>
+            <option value="tapped">Tapped</option>
+            <option value="cbore">Cbore</option>
+            <option value="csink">Csink</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="addCustomHole()" style="margin-top:4px">+ Add Hole</button>
+    </div>
+
+  </div><!-- /tab-holes -->
+
+  <!-- ══ TAB: EXPORT ══ -->
+  <div class="tab-panel" id="tab-export">
+
+    <div class="export-section">
+      <div class="section-label">Digital</div>
+      <button class="btn btn-primary" onclick="exportSVG()">Export SVG (Cutting)</button>
+      <div class="btn-row" style="margin-top:6px">
+        <button class="btn btn-secondary" onclick="exportPNG('dark')">PNG Dark</button>
+        <button class="btn btn-secondary" onclick="exportPNG('light')">PNG Light</button>
+      </div>
+    </div>
+
+    <div class="export-section">
+      <div class="section-label">Print Template</div>
+      <div class="field two-col">
+        <div><label>Paper</label>
+          <select id="paperSize" style="font-size:11px;padding:5px 6px">
+            <option value="A4">A4 (210×297)</option>
+            <option value="A3">A3 (297×420)</option>
+            <option value="Letter">Letter (216×279)</option>
+          </select>
+        </div>
+        <div><label>Scale</label>
+          <select id="printScale" style="font-size:11px;padding:5px 6px">
+            <option value="1">1:1 real</option>
+            <option value="0.5">1:2</option>
+            <option value="2">2:1</option>
+            <option value="fit">Fit page</option>
+          </select>
+        </div>
+      </div>
+      <div class="toggle-row" style="margin-top:6px"><span class="toggle-label">Show Dimensions</span><div class="toggle on" id="tog-printdim" onclick="this.classList.toggle('on')"></div></div>
+      <div class="toggle-row"><span class="toggle-label">Title Block</span><div class="toggle on" id="tog-titleblock" onclick="this.classList.toggle('on')"></div></div>
+      <button class="btn btn-blue" onclick="exportPrintA4()" style="margin-top:8px">Print / Export PDF</button>
+    </div>
+
+    <div class="export-section">
+      <div class="section-label">Busur / Protractor</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
+        Template marking manual untuk tukang.<br>
+        Print → tempel ke plat → tandai posisi gigi.
+      </div>
+      <div class="info-box" style="margin-bottom:10px">
+        <div class="info-row"><span class="info-key">Diameter</span><span class="info-val" id="prot-od">75mm</span></div>
+        <div class="info-row"><span class="info-key">Spacing</span><span class="info-val" id="prot-spacing">30.00°</span></div>
+        <div class="info-row"><span class="info-key">Gap posisi</span><span class="info-val" id="prot-gap">0°</span></div>
+      </div>
+      <div class="field">
+        <label>Interval Degree Marks</label>
+        <select id="protInterval" style="font-size:11px;padding:5px 6px">
+          <option value="1">Setiap 1°</option>
+          <option value="5">Setiap 5°</option>
+          <option value="10" selected>Setiap 10°</option>
+          <option value="15">Setiap 15°</option>
+          <option value="30">Setiap 30° (spacing saja)</option>
+        </select>
+      </div>
+      <div class="toggle-row" style="margin-top:8px">
+        <span class="toggle-label">Tampilkan Label °</span>
+        <div class="toggle on" id="tog-protlabel" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Tandai Posisi Gigi</span>
+        <div class="toggle on" id="tog-protteeth" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Crosshair Center</span>
+        <div class="toggle on" id="tog-protcross" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <button class="btn btn-blue" onclick="exportProtractor()" style="margin-top:10px">Print Busur / Protractor</button>
+    </div>
+
+    <div class="export-section">
+      <div class="section-label">Summary</div>
+      <div class="info-box">
+        <div class="info-row"><span class="info-key">Pattern</span><span class="info-val" id="ex-pattern">12-1</span></div>
+        <div class="info-row"><span class="info-key">OD × Thick</span><span class="info-val" id="ex-dims">75mm × 3mm</span></div>
+        <div class="info-row"><span class="info-key">Body Disc</span><span class="info-val" id="ex-body">67mm</span></div>
+        <div class="info-row"><span class="info-key">Spoke</span><span class="info-val" id="ex-spoke">None</span></div>
+        <div class="info-row"><span class="info-key">Custom Holes</span><span class="info-val" id="ex-holes">0</span></div>
+      </div>
+    </div>
+
+  </div><!-- /tab-export -->
+
+  </div><!-- /tab-panels -->
+</aside>
+
+<!-- CANVAS -->
+<div class="canvas-wrap">
+  <div class="canvas-toolbar">
+    <button class="tool-btn" onclick="zoomIn()">＋</button>
+    <button class="tool-btn" onclick="zoomOut()">－</button>
+    <button class="tool-btn" onclick="resetView()">Reset</button>
+    <span class="zoom-val" id="zoom-label">100%</span>
+    <span style="margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--text-faint)">scroll=zoom · drag=pan</span>
+  </div>
+  <div class="canvas-area" id="canvas-area">
+    <div id="svg-viewport">
+      <svg id="wheel-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+  </div>
+  <div class="statusbar">
+    <div class="status-item">WHEEL: <span id="st-wheel">12-1</span></div>
+    <div class="status-item">OD: <span id="st-od">75mm</span></div>
+    <div class="status-item">BORE: <span id="st-bore">20mm</span></div>
+    <div class="status-item">GAP@: <span id="st-gap">0°</span></div>
+    <div class="status-item">DIR: <span id="st-dir">CW</span></div>
+    <div class="status-item">SPOKE: <span id="st-spoke">SOLID</span></div>
+  </div>
+</div>
+</div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────
+const opts = { tdc:true, nums:true, deg:false, dir:true, sensor:false, bore:true, light:false };
+let fullMode = false;
+let currentPattern = 'none';
+let customHoles = [];
+const SVG_SIZE = 600;
+let zoom = 1, panX = 0, panY = 0;
+let isPanning = false, startX = 0, startY = 0, startPanX = 0, startPanY = 0;
+
+// ── TABS ──────────────────────────────────────────────
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── TOGGLES ───────────────────────────────────────────
+function toggleOpt(k) {
+  opts[k] = !opts[k];
+  document.getElementById('tog-' + k).classList.toggle('on', opts[k]);
+  if (k === 'bore') document.getElementById('bore-field').classList.toggle('field-disabled', !opts[k]);
+  draw();
+}
+
+function toggleFullMode() {
+  fullMode = !fullMode;
+  document.getElementById('tog-fullmode').classList.toggle('on', fullMode);
+  document.getElementById('field-od-normal').style.display = fullMode ? 'none' : 'block';
+  document.getElementById('field-od-plate').style.display  = fullMode ? 'block' : 'none';
+  document.getElementById('fullmode-info').style.display   = fullMode ? 'block' : 'none';
+  document.getElementById('calc-bodydisc-row').style.display = fullMode ? 'flex' : 'none';
+  update();
+}
+
+// ── PATTERN ───────────────────────────────────────────
+function setPattern(p, btn) {
+  currentPattern = p;
+  document.querySelectorAll('.pattern-btn').forEach(b => { b.classList.remove('active'); b.classList.remove('active-none'); });
+  btn.classList.add('active');
+  if (p === 'none') btn.classList.add('active-none');
+  const isSp = ['spoke3','spoke4','spoke5','spoke6'].includes(p);
+  document.getElementById('spoke-options').style.display = isSp ? 'block' : 'none';
+  document.getElementById('oval-options').style.display  = p === 'oval' ? 'block' : 'none';
+  update();
+}
+
+// ── PRESETS ───────────────────────────────────────────
+function applyPreset(t, m, btn) {
+  document.getElementById('totalTeeth').value = t;
+  document.getElementById('missingTeeth').value = m;
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  update();
+}
+
+// ── PARAMS ────────────────────────────────────────────
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function getParams() {
+  const total      = clamp(parseInt(document.getElementById('totalTeeth').value)||12, 3, 120);
+  const missing    = clamp(parseInt(document.getElementById('missingTeeth').value)||1, 1, total-2);
+  const gapPos     = parseInt(document.getElementById('gapPosition').value)||0;
+  const toothRatio = parseInt(document.getElementById('toothRatio').value)/100;
+  const toothHeight= clamp(parseFloat(document.getElementById('toothHeight').value)||4, 1, 40);
+  const boreDiam   = clamp(parseFloat(document.getElementById('boreDiam').value)||20, 3, 490);
+  const mountCount = clamp(parseInt(document.getElementById('mountCount').value)||0, 0, 12);
+  const mountDiam  = clamp(parseFloat(document.getElementById('mountDiam').value)||5, 2, 30);
+  const mountPCD   = clamp(parseFloat(document.getElementById('mountPCD').value)||50, 10, 400);
+  const mountType  = document.getElementById('mountType').value;
+  const rotDir     = document.getElementById('rotDir').value;
+  const spokeWidth = parseInt(document.getElementById('spokeWidth').value)||8;
+  const spokeRadius= parseInt(document.getElementById('spokeRadius').value)||2;
+  const spokeOffset= parseInt(document.getElementById('spokeOffset').value)||0;
+  const ovalCount  = clamp(parseInt(document.getElementById('ovalCount').value)||3, 2, 12);
+  const ovalRatio  = parseInt(document.getElementById('ovalRatio').value)/100;
+  const ovalOffset = parseInt(document.getElementById('ovalOffset').value)||0;
+  const density    = parseFloat(document.getElementById('materialSel').value)||7.85;
+  const thickness  = 3; // assumed physical thickness mm (for weight calc)
+
+  let outerDiam, plateDiam, bodyDiscDiam;
+  if (fullMode) {
+    plateDiam    = clamp(parseFloat(document.getElementById('plateDiam').value)||75, 20, 500);
+    outerDiam    = plateDiam;
+    bodyDiscDiam = plateDiam - toothHeight*2;
+  } else {
+    plateDiam    = null;
+    outerDiam    = clamp(parseFloat(document.getElementById('outerDiam').value)||75, 20, 500);
+    bodyDiscDiam = outerDiam - toothHeight*2;
+  }
+
+  return { total, missing, gapPos, toothRatio, outerDiam, toothHeight, boreDiam,
+    mountCount, mountDiam, mountPCD, mountType, rotDir, plateDiam, bodyDiscDiam, fullMode,
+    currentPattern, spokeWidth, spokeRadius, spokeOffset,
+    ovalCount, ovalRatio, ovalOffset, density, thickness };
+}
+
+// ── UPDATE ────────────────────────────────────────────
+function update() {
+  const p = getParams();
+  document.getElementById('gapPosVal').textContent     = document.getElementById('gapPosition').value + '°';
+  document.getElementById('toothRatioVal').textContent  = document.getElementById('toothRatio').value + '%';
+  document.getElementById('spokeWidthVal').textContent  = document.getElementById('spokeWidth').value + 'mm';
+  document.getElementById('spokeRadiusVal').textContent = document.getElementById('spokeRadius').value + 'mm';
+  document.getElementById('spokeOffsetVal').textContent = document.getElementById('spokeOffset').value + '°';
+  document.getElementById('ovalRatioVal').textContent   = document.getElementById('ovalRatio').value + '%';
+  document.getElementById('ovalOffsetVal').textContent  = document.getElementById('ovalOffset').value + '°';
+
+  const spacing = 360 / p.total;
+  const highDeg = spacing * p.toothRatio;
+  const lowDeg  = spacing * (1 - p.toothRatio);
+  const gapAngle= lowDeg + spacing * p.missing;
+
+  document.getElementById('calc-spacing').textContent = spacing.toFixed(2) + '°';
+  document.getElementById('calc-gap').textContent     = (spacing*(p.missing+1)).toFixed(2) + '°';
+  document.getElementById('calc-actual').textContent  = p.total - p.missing;
+  document.getElementById('calc-circ').textContent    = (Math.PI*p.outerDiam).toFixed(2) + 'mm';
+  document.getElementById('calc-high').textContent    = highDeg.toFixed(2) + '°';
+  document.getElementById('calc-low').textContent     = lowDeg.toFixed(2) + '°';
+
+  // Full plate mode
+  if (p.fullMode) {
+    document.getElementById('fm-plate').textContent = p.plateDiam + 'mm';
+    document.getElementById('fm-body').textContent  = p.bodyDiscDiam.toFixed(1) + 'mm';
+    document.getElementById('fm-tip').textContent   = p.outerDiam + 'mm';
+    document.getElementById('calc-bodydisc').textContent = p.bodyDiscDiam.toFixed(1) + 'mm';
+    const tooSmall = p.bodyDiscDiam < p.boreDiam + 8 || p.bodyDiscDiam <= 0;
+    const warnEl = document.getElementById('warn-tooth');
+    warnEl.style.display = tooSmall ? 'block' : 'none';
+    if (tooSmall) warnEl.textContent = `Tooth height ${p.toothHeight}mm terlalu besar! Body disc ${p.bodyDiscDiam.toFixed(1)}mm terlalu tipis.`;
+  }
+
+  // Weight estimate
+  const discR = p.outerDiam/2, boreR2 = p.boreDiam/2;
+  const volSolid = Math.PI * (discR*discR - boreR2*boreR2) * p.thickness * 0.001; // cm³
+  const massSolid = volSolid * p.density;
+  // Spoke cutout estimate: rough 30-50% removal
+  let cutFrac = 0;
+  if (p.currentPattern !== 'none') {
+    const n = p.currentPattern === 'oval' ? p.ovalCount :
+              p.currentPattern === 'spoke3' ? 3 : p.currentPattern === 'spoke4' ? 4 :
+              p.currentPattern === 'spoke5' ? 5 : p.currentPattern === 'spoke6' ? 6 : 0;
+    const spokeW = p.spokeWidth;
+    const innerBodyR = p.bodyDiscDiam/2;
+    const spokeArea = n * spokeW * (innerBodyR - boreR2);
+    const bodyArea  = Math.PI * (innerBodyR*innerBodyR - boreR2*boreR2);
+    cutFrac = Math.min(0.7, spokeArea > 0 ? 1 - (spokeArea/bodyArea) : 0.35);
+  }
+  const massAfter = massSolid * (1 - cutFrac * 0.5);
+  document.getElementById('wt-vol').textContent  = volSolid.toFixed(1) + ' cm³';
+  document.getElementById('wt-mass').textContent = massSolid.toFixed(1) + ' g';
+  document.getElementById('wt-cut').textContent  = p.currentPattern === 'none' ? '— (solid)' : '~' + massAfter.toFixed(1) + ' g';
+
+  // Wall check
+  const innerR2 = p.bodyDiscDiam/2;
+  const wallInner = innerR2 - boreR2 - p.spokeWidth/2;
+  const wallOuter = innerR2 - boreR2 - p.spokeWidth/2;
+  if (p.currentPattern !== 'none' && p.currentPattern !== 'oval') {
+    const wi = (innerR2 - boreR2 - p.spokeWidth/2).toFixed(1);
+    const wo = wi;
+    document.getElementById('wall-inner').textContent = wi + 'mm';
+    document.getElementById('wall-outer').textContent = wo + 'mm';
+    document.getElementById('warn-wall').style.display = parseFloat(wi) < 3 ? 'block' : 'none';
+  } else {
+    document.getElementById('wall-inner').textContent = '—';
+    document.getElementById('wall-outer').textContent = '—';
+    document.getElementById('warn-wall').style.display = 'none';
+  }
+
+  // Status
+  document.getElementById('wf-high').textContent = highDeg.toFixed(1) + '°';
+  document.getElementById('wf-low').textContent  = lowDeg.toFixed(1) + '°';
+  document.getElementById('wf-gap').textContent  = gapAngle.toFixed(1) + '°';
+  document.getElementById('st-wheel').textContent = p.total + '-' + p.missing;
+  document.getElementById('st-od').textContent    = p.outerDiam + 'mm';
+  document.getElementById('st-bore').textContent  = p.boreDiam + 'mm';
+  document.getElementById('st-gap').textContent   = p.gapPos + '°';
+  document.getElementById('st-dir').textContent   = p.rotDir.toUpperCase();
+  document.getElementById('st-spoke').textContent = p.currentPattern.toUpperCase();
+
+  // Export summary
+  document.getElementById('ex-pattern').textContent = p.total + '-' + p.missing;
+  document.getElementById('ex-dims').textContent    = p.outerDiam + 'mm × ' + p.thickness + 'mm';
+  document.getElementById('ex-body').textContent    = p.bodyDiscDiam.toFixed(1) + 'mm';
+  document.getElementById('ex-spoke').textContent   = p.currentPattern === 'none' ? 'Solid' : p.currentPattern.toUpperCase();
+  document.getElementById('ex-holes').textContent   = customHoles.length;
+
+  // Protractor info
+  document.getElementById('prot-od').textContent      = p.outerDiam + 'mm';
+  document.getElementById('prot-spacing').textContent = (360/p.total).toFixed(2) + '°';
+  document.getElementById('prot-gap').textContent     = p.gapPos + '°';
+
+  updateTriggerCalc();
+  drawWaveform();
+  draw();
+}
+
+// ── TRIGGER ANGLE ─────────────────────────────────────
+function updateTriggerCalc() {
+  const p = getParams();
+  const offset  = parseInt(document.getElementById('sensorOffset').value)||0;
+  document.getElementById('sensorOffsetVal').textContent = offset + '°';
+  const spacing = 360 / p.total;
+  const gapSlot = Math.round(p.gapPos / spacing);
+  const firstTooth = ((gapSlot + p.missing) % p.total) * spacing;
+  const trigAngle = (firstTooth - offset + 360) % 360;
+  document.getElementById('triggerAngle').textContent  = trigAngle.toFixed(2) + '° ATDC';
+  document.getElementById('toothAfterGap').textContent = 'Tooth #' + ((gapSlot + p.missing) % p.total + 1);
+}
+
+// ── WAVEFORM ──────────────────────────────────────────
+function drawWaveform() {
+  const p = getParams();
+  const canvas = document.getElementById('waveform-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const spacing = 360/p.total, toothFrac = p.toothRatio;
+  const bg = opts.light?'#f0f4f0':'#1a1d1a';
+  const hi = '#c8f135', gapC = '#ff4d4d', gridC = opts.light?'#ccddcc':'#2a3a2a';
+  const gapSlot = Math.round(p.gapPos/spacing);
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle=gridC; ctx.lineWidth=0.5;
+  [0,90,180,270].forEach(d=>{ const x=d/360*W; ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); });
+  const highH=H*.3, lowH=H*.82;
+  ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(0,lowH);
+  for(let i=0;i<p.total;i++){
+    let isMissing=false;
+    for(let m=0;m<p.missing;m++){ if(i===(gapSlot+m)%p.total){isMissing=true;break;} }
+    const s0=i*spacing/360*W, s1=(i*spacing+spacing*toothFrac)/360*W, s2=(i+1)*spacing/360*W;
+    if(isMissing){ ctx.strokeStyle=gapC; ctx.lineTo(s2,lowH); }
+    else{ ctx.strokeStyle=hi; ctx.lineTo(s0,lowH);ctx.lineTo(s0,highH);ctx.lineTo(s1,highH);ctx.lineTo(s1,lowH);ctx.lineTo(s2,lowH); }
+  }
+  ctx.stroke();
+  ctx.font='8px Share Tech Mono,monospace'; ctx.fillStyle=gridC;
+  ['0°','90°','180°','270°'].forEach((l,i)=>ctx.fillText(l,i*W/4+2,H-2));
+}
+
+// ── DRAW SVG ──────────────────────────────────────────
+function spokePath(cx, cy, innerR, boreR, count, spokeW, cornerR, offsetDeg, dirSign) {
+  let paths = '';
+  const halfW = spokeW / 2;
+  for (let i = 0; i < count; i++) {
+    const angle = ((i * 360/count) + offsetDeg) * dirSign * Math.PI/180;
+    const perpAngle = angle + Math.PI/2;
+    const cos = Math.cos(angle), sin = Math.sin(angle);
+    const pcos = Math.cos(perpAngle), psin = Math.sin(perpAngle);
+    const x1 = cx + cos*boreR + pcos*halfW,   y1 = cy + sin*boreR + psin*halfW;
+    const x2 = cx + cos*innerR + pcos*halfW,  y2 = cy + sin*innerR + psin*halfW;
+    const x3 = cx + cos*innerR - pcos*halfW,  y3 = cy + sin*innerR - psin*halfW;
+    const x4 = cx + cos*boreR - pcos*halfW,   y4 = cy + sin*boreR - psin*halfW;
+    const r = Math.min(cornerR, halfW*0.8);
+    paths += `<path d="M ${x1} ${y1} L ${x2} ${y2} L ${x3} ${y3} L ${x4} ${y4} Z" fill="currentColor"/>`;
+  }
+  return paths;
+}
+
+function draw() {
+  const p   = getParams();
+  const svg = document.getElementById('wheel-svg');
+  const S   = SVG_SIZE, cx = S/2, cy = S/2;
+  const maxR = S*0.40;
+  const scale  = maxR/(p.outerDiam/2);
+  const outerR = (p.outerDiam/2)*scale;
+  const innerR = p.fullMode ? (p.bodyDiscDiam/2)*scale : outerR - p.toothHeight*scale;
+  const boreR  = (p.boreDiam/2)*scale;
+  const mountR = (p.mountPCD/2)*scale;
+  const mountHR= (p.mountDiam/2)*scale;
+  const isCCW  = p.rotDir==='ccw', dirSign = isCCW?-1:1;
+  const spacing= 360/p.total, toothArc=spacing*p.toothRatio;
+  const gapSlot= Math.round(p.gapPos/spacing);
+
+  const C = opts.light ? {
+    bg:'#f0f4f0',wheel:'#e0e8e0',tooth:'#b8ccb8',toothStroke:'#7a9a7a',
+    bore:'#f0f4f0',boreStroke:'#5a7a5a',accent:'#3a6010',accentDim:'#4a7018',
+    red:'#cc1010',dim:'#c0d0c0',text:'#2a4a2a',textDim:'#6a8a6a',mount:'#7a9a7a',
+    spoke:'#c8ddc8',spokeStroke:'#5a7a5a'
+  }:{
+    bg:'#0d0f0e',wheel:'#1e221e',tooth:'#2a3a2a',toothStroke:'#3a4e3a',
+    bore:'#0d0f0e',boreStroke:'#3a4a3a',accent:'#c8f135',accentDim:'#5a7020',
+    red:'#ff4d4d',dim:'#2a3a2a',text:'#c8f135',textDim:'#5a6a5a',mount:'#3a5a3a',
+    spoke:'#0d0f0e',spokeStroke:'#2a3a2a'
+  };
+
+  let s = `<rect width="${S}" height="${S}" fill="${C.bg}"/>`;
+
+  // Degree marks
+  if(opts.deg){
+    for(let deg=0;deg<360;deg+=10){
+      const ddr=isCCW?-deg:deg, rad=(ddr-90)*Math.PI/180;
+      const isM=deg%90===0, r1=outerR+(isM?16:9), r2=outerR+(isM?4:2);
+      s+=`<line x1="${cx+Math.cos(rad)*r1}" y1="${cy+Math.sin(rad)*r1}" x2="${cx+Math.cos(rad)*r2}" y2="${cy+Math.sin(rad)*r2}" stroke="${isM?C.accent:C.dim}" stroke-width="${isM?1.5:.7}"/>`;
+      if(isM){ const xt=cx+Math.cos(rad)*(r1+13),yt=cy+Math.sin(rad)*(r1+13); s+=`<text x="${xt}" y="${yt}" fill="${C.accentDim}" font-family="Share Tech Mono,monospace" font-size="10" text-anchor="middle" dominant-baseline="middle">${deg}°</text>`; }
+    }
+  }
+
+  // Base disc
+  s += `<circle cx="${cx}" cy="${cy}" r="${innerR}" fill="${C.wheel}" stroke="${C.toothStroke}" stroke-width="0.5"/>`;
+
+  // Full plate mode circles
+  if(p.fullMode){
+    s+=`<circle cx="${cx}" cy="${cy}" r="${outerR}" fill="none" stroke="#ff9a3c" stroke-width=".8" stroke-dasharray="5,3" opacity=".5"/>`;
+    s+=`<text x="${cx+outerR+4}" y="${cy-5}" fill="#ff9a3c" font-family="Share Tech Mono,monospace" font-size="8" opacity=".7">PLATE ${p.plateDiam}mm</text>`;
+    s+=`<text x="${cx+innerR+4}" y="${cy+8}" fill="${C.accentDim}" font-family="Share Tech Mono,monospace" font-size="8" opacity=".7">BODY ${p.bodyDiscDiam.toFixed(0)}mm</text>`;
+  }
+
+  // ── SPOKE / CUTOUT PATTERN ──
+  if(p.currentPattern !== 'none'){
+    const count = p.currentPattern==='oval'?p.ovalCount:
+      p.currentPattern==='spoke3'?3:p.currentPattern==='spoke4'?4:
+      p.currentPattern==='spoke5'?5:6;
+    const spokeWpx = p.spokeWidth*scale;
+    const offsetDeg = (p.currentPattern==='oval'?p.ovalOffset:p.spokeOffset);
+
+    if(p.currentPattern==='oval'){
+      // Oval cutouts
+      const midR = (innerR+boreR)/2;
+      const ovalH = (innerR-boreR)*p.ovalRatio*0.5;
+      const ovalW = spokeWpx*0.7;
+      for(let i=0;i<count;i++){
+        const ang = ((i*360/count)+offsetDeg)*dirSign*Math.PI/180 - Math.PI/2;
+        const ox=cx+Math.cos(ang)*midR, oy=cy+Math.sin(ang)*midR;
+        const rot=(ang*180/Math.PI)+90;
+        s+=`<ellipse cx="${ox}" cy="${oy}" rx="${ovalW}" ry="${ovalH}" fill="${C.bg}" stroke="${C.toothStroke}" stroke-width=".6" transform="rotate(${rot},${ox},${oy})"/>`;
+      }
+    } else {
+      // Spoke cutouts — draw the BODY area then cut spokes as solid fills on bg color
+      // Draw cutout areas between spokes
+      for(let i=0;i<count;i++){
+        const a1=((i*360/count)+offsetDeg+(360/count)*0.15)*dirSign*Math.PI/180 - Math.PI/2;
+        const a2=((i*360/count)+offsetDeg+(360/count)*0.85)*dirSign*Math.PI/180 - Math.PI/2;
+        const x1o=cx+Math.cos(a1)*innerR, y1o=cy+Math.sin(a1)*innerR;
+        const x2o=cx+Math.cos(a2)*innerR, y2o=cy+Math.sin(a2)*innerR;
+        const x1b=cx+Math.cos(a1)*boreR,  y1b=cy+Math.sin(a1)*boreR;
+        const x2b=cx+Math.cos(a2)*boreR,  y2b=cy+Math.sin(a2)*boreR;
+        const la = (360/count*0.7)>180?1:0;
+        const sweep=isCCW?0:1;
+        s+=`<path d="M ${x1b} ${y1b} L ${x1o} ${y1o} A ${innerR} ${innerR} 0 ${la} ${sweep} ${x2o} ${y2o} L ${x2b} ${y2b} A ${boreR} ${boreR} 0 ${la} ${sweep?0:1} ${x1b} ${y1b} Z" fill="${C.bg}" stroke="none"/>`;
+      }
+    }
+  }
+
+  // Teeth
+  for(let i=0;i<p.total;i++){
+    let isMissing=false;
+    for(let m=0;m<p.missing;m++){ if(i===(gapSlot+m)%p.total){isMissing=true;break;} }
+    if(isMissing) continue;
+    const baseAngle=i*spacing*dirSign;
+    const startDeg=baseAngle-90, endDeg=startDeg+toothArc*dirSign;
+    const sr=startDeg*Math.PI/180, er=endDeg*Math.PI/180;
+    const x1o=cx+Math.cos(sr)*outerR,y1o=cy+Math.sin(sr)*outerR;
+    const x2o=cx+Math.cos(er)*outerR,y2o=cy+Math.sin(er)*outerR;
+    const x1i=cx+Math.cos(sr)*innerR,y1i=cy+Math.sin(sr)*innerR;
+    const x2i=cx+Math.cos(er)*innerR,y2i=cy+Math.sin(er)*innerR;
+    const sw=isCCW?0:1, la=toothArc>180?1:0;
+    s+=`<path d="M ${x1i} ${y1i} L ${x1o} ${y1o} A ${outerR} ${outerR} 0 ${la} ${sw} ${x2o} ${y2o} L ${x2i} ${y2i} A ${innerR} ${innerR} 0 ${la} ${sw?0:1} ${x1i} ${y1i} Z" fill="${C.tooth}" stroke="${C.toothStroke}" stroke-width=".8"/>`;
+    // Tooth numbers
+    if(opts.nums && p.total<=72){
+      const md=startDeg+(toothArc*dirSign)/2, mr=md*Math.PI/180;
+      const lr=(outerR+innerR)/2, fs=Math.max(6,Math.min(10,120/p.total));
+      s+=`<text x="${cx+Math.cos(mr)*lr}" y="${cy+Math.sin(mr)*lr}" fill="${C.text}" font-family="Share Tech Mono,monospace" font-size="${fs}" text-anchor="middle" dominant-baseline="middle" opacity=".7">${i+1}</text>`;
+    }
+  }
+
+  // Gap highlight
+  const gvsd=gapSlot*spacing*dirSign-90, gved=gvsd+spacing*p.missing*dirSign;
+  const gsr=gvsd*Math.PI/180, ger=gved*Math.PI/180;
+  const gxo1=cx+Math.cos(gsr)*outerR,gyo1=cy+Math.sin(gsr)*outerR;
+  const gxo2=cx+Math.cos(ger)*outerR,gyo2=cy+Math.sin(ger)*outerR;
+  const gxi1=cx+Math.cos(gsr)*innerR,gyi1=cy+Math.sin(gsr)*innerR;
+  const gxi2=cx+Math.cos(ger)*innerR,gyi2=cy+Math.sin(ger)*innerR;
+  const gL=(spacing*p.missing)>180?1:0, gSw=isCCW?0:1;
+  s+=`<path d="M ${gxi1} ${gyi1} L ${gxo1} ${gyo1} A ${outerR} ${outerR} 0 ${gL} ${gSw} ${gxo2} ${gyo2} L ${gxi2} ${gyi2} A ${innerR} ${innerR} 0 ${gL} ${gSw?0:1} ${gxi1} ${gyi1} Z" fill="rgba(255,77,77,.09)" stroke="${C.red}" stroke-width=".8" stroke-dasharray="3,2"/>`;
+  const gMr=((gvsd+gved)/2)*Math.PI/180, glr=(outerR+innerR)/2;
+  s+=`<text x="${cx+Math.cos(gMr)*glr}" y="${cy+Math.sin(gMr)*glr}" fill="${C.red}" font-family="Share Tech Mono,monospace" font-size="9" text-anchor="middle" dominant-baseline="middle" opacity=".85">GAP</text>`;
+
+  // Mounting holes (auto)
+  if(p.mountCount>0){
+    for(let i=0;i<p.mountCount;i++){
+      const ma=(i*360/p.mountCount-90)*Math.PI/180;
+      const mx=cx+Math.cos(ma)*mountR, my=cy+Math.sin(ma)*mountR;
+      s+=`<circle cx="${mx}" cy="${my}" r="${mountHR}" fill="${C.bore}" stroke="${C.mount}" stroke-width="1"/>`;
+      if(p.mountType==='tapped') s+=`<circle cx="${mx}" cy="${my}" r="${mountHR*.6}" fill="none" stroke="${C.mount}" stroke-width=".5" stroke-dasharray="2,1"/>`;
+      if(p.mountType==='cbore') s+=`<circle cx="${mx}" cy="${my}" r="${mountHR*1.4}" fill="none" stroke="${C.mount}" stroke-width=".7" stroke-dasharray="2,2"/>`;
+    }
+    s+=`<circle cx="${cx}" cy="${cy}" r="${mountR}" fill="none" stroke="${C.mount}" stroke-width=".4" stroke-dasharray="4,3" opacity=".5"/>`;
+  }
+
+  // Custom holes
+  customHoles.forEach(h=>{
+    const hr=(h.r/p.outerDiam*2)*outerR;
+    const ha=(h.angle*dirSign-90)*Math.PI/180;
+    const hx=cx+Math.cos(ha)*hr, hy=cy+Math.sin(ha)*hr;
+    const hdr=(h.d/2/p.outerDiam*2)*outerR;
+    s+=`<circle cx="${hx}" cy="${hy}" r="${hdr}" fill="${C.bore}" stroke="${C.red}" stroke-width=".8"/>`;
+    if(h.type==='tapped') s+=`<circle cx="${hx}" cy="${hy}" r="${hdr*.6}" fill="none" stroke="${C.red}" stroke-width=".5" stroke-dasharray="2,1"/>`;
+    s+=`<text x="${hx}" y="${hy-hdr-4}" fill="${C.red}" font-family="Share Tech Mono,monospace" font-size="7" text-anchor="middle">${h.type[0].toUpperCase()}Ø${h.d}</text>`;
+  });
+
+  // Bore
+  if(opts.bore){
+    s+=`<circle cx="${cx}" cy="${cy}" r="${boreR}" fill="${C.bore}" stroke="${C.boreStroke}" stroke-width="1"/>`;
+  }
+  // Center cross
+  const cs=Math.max(boreR*.6,7);
+  s+=`<line x1="${cx-cs}" y1="${cy}" x2="${cx+cs}" y2="${cy}" stroke="${C.accentDim}" stroke-width=".7"/>`;
+  s+=`<line x1="${cx}" y1="${cy-cs}" x2="${cx}" y2="${cy+cs}" stroke="${C.accentDim}" stroke-width=".7"/>`;
+
+  // TDC
+  if(opts.tdc){
+    const r1=outerR+20,r2=outerR+5;
+    s+=`<line x1="${cx}" y1="${cy-r1}" x2="${cx}" y2="${cy-r2}" stroke="${C.accent}" stroke-width="1.5"/>`;
+    s+=`<polygon points="${cx},${cy-r2+2} ${cx-4},${cy-r1+8} ${cx+4},${cy-r1+8}" fill="${C.accent}"/>`;
+    s+=`<text x="${cx}" y="${cy-r1-9}" fill="${C.accent}" font-family="Share Tech Mono,monospace" font-size="9" text-anchor="middle" letter-spacing="1">TDC</text>`;
+  }
+
+  // Direction arrow
+  if(opts.dir){
+    const ar=innerR*(opts.bore?.55:.7);
+    if(isCCW){
+      s+=`<path d="M ${cx-ar} ${cy} A ${ar} ${ar} 0 1 0 ${cx} ${cy-ar}" fill="none" stroke="${C.accentDim}" stroke-width="1.1" stroke-dasharray="4,2"/>`;
+    } else {
+      s+=`<path d="M ${cx+ar} ${cy} A ${ar} ${ar} 0 1 1 ${cx} ${cy-ar}" fill="none" stroke="${C.accentDim}" stroke-width="1.1" stroke-dasharray="4,2"/>`;
+    }
+    s+=`<text x="${cx}" y="${cy+12}" fill="${C.accentDim}" font-family="Share Tech Mono,monospace" font-size="8" text-anchor="middle">${isCCW?'CCW':'CW'}</text>`;
+  }
+
+  // Sensor ref
+  if(opts.sensor){
+    const offset=parseInt(document.getElementById('sensorOffset').value)||0;
+    const srad=(offset*dirSign-90)*Math.PI/180;
+    const sx1=cx+Math.cos(srad)*(outerR+32),sy1=cy+Math.sin(srad)*(outerR+32);
+    const sx2=cx+Math.cos(srad)*(outerR+4), sy2=cy+Math.sin(srad)*(outerR+4);
+    s+=`<line x1="${sx1}" y1="${sy1}" x2="${sx2}" y2="${sy2}" stroke="#ff9a3c" stroke-width="1.5" stroke-dasharray="4,3" opacity=".8"/>`;
+    s+=`<rect x="${sx1-14}" y="${sy1-8}" width="28" height="16" fill="#ff9a3c" rx="3" opacity=".85"/>`;
+    s+=`<text x="${sx1}" y="${sy1}" fill="#0d0f0e" font-family="Share Tech Mono,monospace" font-size="8" text-anchor="middle" dominant-baseline="middle" font-weight="bold">SENSOR</text>`;
+  }
+
+  s+=`<text x="${S-7}" y="${S-7}" fill="${C.textDim}" font-family="Share Tech Mono,monospace" font-size="7" text-anchor="end" opacity=".35">TWG v3.0 // dhans62</text>`;
+  svg.innerHTML=s; svg.setAttribute('width',S); svg.setAttribute('height',S);
+  applyViewport();
+}
+
+// ── CUSTOM HOLES ──────────────────────────────────────
+function addCustomHole() {
+  const r = parseFloat(document.getElementById('holeR').value)||25;
+  const a = parseFloat(document.getElementById('holeAngle').value)||0;
+  const d = parseFloat(document.getElementById('holeDiam').value)||5;
+  const t = document.getElementById('holeType').value;
+  customHoles.push({ r, angle:a, d, type:t });
+  renderHoleList();
+  update();
+}
+
+function removeHole(i) {
+  customHoles.splice(i,1);
+  renderHoleList();
+  update();
+}
+
+function renderHoleList() {
+  const el = document.getElementById('hole-list');
+  if(customHoles.length===0){
+    el.innerHTML='<div style="font-family:var(--mono);font-size:9px;color:var(--text-faint);text-align:center;padding:8px">No custom holes</div>';
+    return;
+  }
+  el.innerHTML = customHoles.map((h,i)=>`
+    <div class="hole-item">
+      <div class="hole-item-info">
+        <strong>${h.type.toUpperCase()} Ø${h.d}mm</strong><br>
+        r=${h.r}mm @ ${h.angle}°
+      </div>
+      <button class="hole-del" onclick="removeHole(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+// ── ZOOM / PAN ────────────────────────────────────────
+function applyViewport(){
+  const vp=document.getElementById('svg-viewport');
+  const ca=document.getElementById('canvas-area');
+  const tx=panX+(ca.clientWidth-SVG_SIZE*zoom)/2;
+  const ty=panY+(ca.clientHeight-SVG_SIZE*zoom)/2;
+  vp.style.transform=`translate(${tx}px,${ty}px) scale(${zoom})`;
+  document.getElementById('zoom-label').textContent=Math.round(zoom*100)+'%';
+}
+function zoomIn(){zoom=Math.min(zoom*1.25,5);applyViewport();}
+function zoomOut(){zoom=Math.max(zoom/1.25,.2);applyViewport();}
+function resetView(){zoom=1;panX=0;panY=0;applyViewport();}
+
+const ca=document.getElementById('canvas-area');
+ca.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.min(Math.max(zoom*(e.deltaY<0?1.12:.89),.2),5);applyViewport();},{passive:false});
+ca.addEventListener('mousedown',e=>{isPanning=true;startX=e.clientX;startY=e.clientY;startPanX=panX;startPanY=panY;ca.classList.add('grabbing');});
+window.addEventListener('mousemove',e=>{if(!isPanning)return;panX=startPanX+(e.clientX-startX);panY=startPanY+(e.clientY-startY);applyViewport();});
+window.addEventListener('mouseup',()=>{isPanning=false;ca.classList.remove('grabbing');});
+ca.addEventListener('touchstart',e=>{if(e.touches.length===1){isPanning=true;startX=e.touches[0].clientX;startY=e.touches[0].clientY;startPanX=panX;startPanY=panY;}},{passive:true});
+ca.addEventListener('touchmove',e=>{if(!isPanning||e.touches.length!==1)return;panX=startPanX+(e.touches[0].clientX-startX);panY=startPanY+(e.touches[0].clientY-startY);applyViewport();},{passive:true});
+ca.addEventListener('touchend',()=>{isPanning=false;});
+window.addEventListener('resize',applyViewport);
+
+// ── EXPORT ────────────────────────────────────────────
+function getSVGStr(bgOverride){
+  const svg=document.getElementById('wheel-svg').cloneNode(true);
+  if(bgOverride) svg.querySelector('rect').setAttribute('fill',bgOverride);
+  return '<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(svg);
+}
+function exportSVG(){
+  const p=getParams();
+  const blob=new Blob([getSVGStr()],{type:'image/svg+xml'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`trigger-wheel-${p.total}-${p.missing}_od${p.outerDiam}mm.svg`;
+  a.click();
+}
+function exportPNG(mode){
+  const p=getParams();
+  const bg=mode==='light'?'#ffffff':'#0d0f0e';
+  const str=getSVGStr(bg);
+  const blob=new Blob([str],{type:'image/svg+xml'});
+  const url=URL.createObjectURL(blob);
+  const img=new Image();
+  img.onload=function(){
+    const c=document.createElement('canvas');c.width=1200;c.height=1200;
+    c.getContext('2d').drawImage(img,0,0,1200,1200);
+    URL.revokeObjectURL(url);
+    c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`trigger-wheel-${p.total}-${p.missing}_od${p.outerDiam}mm_${mode}.png`;a.click();});
+  };
+  img.src=url;
+}
+
+function exportPrintA4(){
+  // ── Baca state aktif saat ini ──
+  const p        = getParams();
+  const showBore = opts.bore;           // ikut toggle bore di canvas
+  const paperSel = document.getElementById('paperSize').value;
+  const scaleSel = document.getElementById('printScale').value;
+  const showDim  = document.getElementById('tog-printdim').classList.contains('on');
+  const showTitle= document.getElementById('tog-titleblock').classList.contains('on');
+
+  const papers = {A4:{w:210,h:297},A3:{w:297,h:420},Letter:{w:216,h:279}};
+  const paper  = papers[paperSel];
+  const PM     = 3.7795275591;
+  const pw=paper.w*PM, ph=paper.h*PM, margin=15*PM;
+  const titleH = showTitle ? 38*PM : 0;
+  const drawW  = pw-margin*2;
+  const drawH  = ph-margin*2-titleH-50; // extra top room for dim lines
+  const sf     = scaleSel==='fit' ? Math.min(drawW,drawH)/p.outerDiam : parseFloat(scaleSel)*PM;
+
+  const outerR  = (p.outerDiam/2)*sf;
+  const innerR  = p.fullMode ? (p.bodyDiscDiam/2)*sf : outerR-p.toothHeight*sf;
+  const boreR   = (p.boreDiam/2)*sf;
+  const mountR  = (p.mountPCD/2)*sf;
+  const mountHR = (p.mountDiam/2)*sf;
+  const spacing = 360/p.total, toothArc=spacing*p.toothRatio;
+  const gapSlot = Math.round(p.gapPos/spacing);
+  const isCCW   = p.rotDir==='ccw', dS=isCCW?-1:1;
+  const cx      = pw/2;
+  const cy      = margin + 40 + drawH/2; // shifted down to give room for top dim
+
+  // Colors — always print (light)
+  const bg='#fff',disc='#eeeeee',tooth='#cccccc',ts='#444444';
+  const boreC='#fff',boreS='#222',ac='#000',rd='#cc0000';
+  const dim='#0033cc',mc='#555',gapFC='rgba(180,0,0,0.06)';
+  const spokeC='#fff', spokeS='#555';
+
+  let s = `<rect width="${pw}" height="${ph}" fill="${bg}"/>`;
+  s += `<rect x="${margin*.5}" y="${margin*.5}" width="${pw-margin}" height="${ph-margin}" fill="none" stroke="#cccccc" stroke-width=".5"/>`;
+
+  // ── Base disc ──
+  s += `<circle cx="${cx}" cy="${cy}" r="${innerR}" fill="${disc}" stroke="${ts}" stroke-width=".5"/>`;
+
+  // ── Spoke / cutout pattern (baca state currentPattern) ──
+  if(p.currentPattern !== 'none'){
+    const count = p.currentPattern==='oval'?p.ovalCount:
+      p.currentPattern==='spoke3'?3:p.currentPattern==='spoke4'?4:
+      p.currentPattern==='spoke5'?5:6;
+    const offsetDeg = p.currentPattern==='oval'?p.ovalOffset:p.spokeOffset;
+    if(p.currentPattern==='oval'){
+      const midR=(innerR+boreR)/2, ovalH=(innerR-boreR)*p.ovalRatio*0.5, ovalW=p.spokeWidth*sf*0.7;
+      for(let i=0;i<count;i++){
+        const ang=((i*360/count)+offsetDeg)*dS*Math.PI/180-Math.PI/2;
+        const ox=cx+Math.cos(ang)*midR,oy=cy+Math.sin(ang)*midR,rot=(ang*180/Math.PI)+90;
+        s+=`<ellipse cx="${ox}" cy="${oy}" rx="${ovalW}" ry="${ovalH}" fill="${spokeC}" stroke="${spokeS}" stroke-width=".5" transform="rotate(${rot},${ox},${oy})"/>`;
+      }
+    } else {
+      for(let i=0;i<count;i++){
+        const a1=((i*360/count)+offsetDeg+(360/count)*.15)*dS*Math.PI/180-Math.PI/2;
+        const a2=((i*360/count)+offsetDeg+(360/count)*.85)*dS*Math.PI/180-Math.PI/2;
+        const x1o=cx+Math.cos(a1)*innerR,y1o=cy+Math.sin(a1)*innerR;
+        const x2o=cx+Math.cos(a2)*innerR,y2o=cy+Math.sin(a2)*innerR;
+        const x1b=cx+Math.cos(a1)*boreR, y1b=cy+Math.sin(a1)*boreR;
+        const x2b=cx+Math.cos(a2)*boreR, y2b=cy+Math.sin(a2)*boreR;
+        const la=(360/count*.7)>180?1:0, sw=isCCW?0:1;
+        s+=`<path d="M ${x1b} ${y1b} L ${x1o} ${y1o} A ${innerR} ${innerR} 0 ${la} ${sw} ${x2o} ${y2o} L ${x2b} ${y2b} A ${boreR} ${boreR} 0 ${la} ${sw?0:1} ${x1b} ${y1b} Z" fill="${spokeC}" stroke="${spokeS}" stroke-width=".4"/>`;
+      }
+    }
+  }
+
+  // ── Teeth ──
+  for(let i=0;i<p.total;i++){
+    let im=false; for(let m=0;m<p.missing;m++){if(i===(gapSlot+m)%p.total){im=true;break;}}
+    if(im) continue;
+    const ba=i*spacing*dS,sd=ba-90,ed=sd+toothArc*dS,sr=sd*Math.PI/180,er=ed*Math.PI/180;
+    const x1o=cx+Math.cos(sr)*outerR,y1o=cy+Math.sin(sr)*outerR;
+    const x2o=cx+Math.cos(er)*outerR,y2o=cy+Math.sin(er)*outerR;
+    const x1i=cx+Math.cos(sr)*innerR,y1i=cy+Math.sin(sr)*innerR;
+    const x2i=cx+Math.cos(er)*innerR,y2i=cy+Math.sin(er)*innerR;
+    const sw=isCCW?0:1,la=toothArc>180?1:0;
+    s+=`<path d="M ${x1i} ${y1i} L ${x1o} ${y1o} A ${outerR} ${outerR} 0 ${la} ${sw} ${x2o} ${y2o} L ${x2i} ${y2i} A ${innerR} ${innerR} 0 ${la} ${sw?0:1} ${x1i} ${y1i} Z" fill="${tooth}" stroke="${ts}" stroke-width=".6"/>`;
+  }
+
+  // ── Gap highlight ──
+  const gvsd=gapSlot*spacing*dS-90,gved=gvsd+spacing*p.missing*dS;
+  const gsr2=gvsd*Math.PI/180,ger2=gved*Math.PI/180;
+  const gxo1=cx+Math.cos(gsr2)*outerR,gyo1=cy+Math.sin(gsr2)*outerR;
+  const gxo2=cx+Math.cos(ger2)*outerR,gyo2=cy+Math.sin(ger2)*outerR;
+  const gxi1=cx+Math.cos(gsr2)*innerR,gyi1=cy+Math.sin(gsr2)*innerR;
+  const gxi2=cx+Math.cos(ger2)*innerR,gyi2=cy+Math.sin(ger2)*innerR;
+  const gL=(spacing*p.missing)>180?1:0,gSw=isCCW?0:1;
+  s+=`<path d="M ${gxi1} ${gyi1} L ${gxo1} ${gyo1} A ${outerR} ${outerR} 0 ${gL} ${gSw} ${gxo2} ${gyo2} L ${gxi2} ${gyi2} A ${innerR} ${innerR} 0 ${gL} ${gSw?0:1} ${gxi1} ${gyi1} Z" fill="${gapFC}" stroke="${rd}" stroke-width=".6" stroke-dasharray="3,2"/>`;
+  const gMr=((gvsd+gved)/2)*Math.PI/180;
+  s+=`<text x="${cx+Math.cos(gMr)*(outerR+innerR)/2}" y="${cy+Math.sin(gMr)*(outerR+innerR)/2}" fill="${rd}" font-family="Arial,sans-serif" font-size="6.5" text-anchor="middle" dominant-baseline="middle">GAP</text>`;
+
+  // ── Mounting holes (auto) — ikut state ──
+  if(p.mountCount>0){
+    for(let i=0;i<p.mountCount;i++){
+      const ma=(i*360/p.mountCount-90)*Math.PI/180;
+      const mx=cx+Math.cos(ma)*mountR,my=cy+Math.sin(ma)*mountR;
+      s+=`<circle cx="${mx}" cy="${my}" r="${mountHR}" fill="${boreC}" stroke="${mc}" stroke-width=".8"/>`;
+      if(p.mountType==='tapped') s+=`<circle cx="${mx}" cy="${my}" r="${mountHR*.6}" fill="none" stroke="${mc}" stroke-width=".5" stroke-dasharray="2,1"/>`;
+    }
+    s+=`<circle cx="${cx}" cy="${cy}" r="${mountR}" fill="none" stroke="${mc}" stroke-width=".4" stroke-dasharray="4,3"/>`;
+  }
+
+  // ── Custom holes — ikut state ──
+  customHoles.forEach(h=>{
+    const hr=(h.r/(p.outerDiam/2))*outerR;
+    const ha=(h.angle*dS-90)*Math.PI/180;
+    const hx=cx+Math.cos(ha)*hr,hy=cy+Math.sin(ha)*hr;
+    const hdr=(h.d/2/p.outerDiam*2)*outerR;
+    s+=`<circle cx="${hx}" cy="${hy}" r="${hdr}" fill="${boreC}" stroke="${rd}" stroke-width=".7"/>`;
+    s+=`<text x="${hx}" y="${hy-hdr-3}" fill="${rd}" font-family="Arial,sans-serif" font-size="6" text-anchor="middle">Ø${h.d}</text>`;
+  });
+
+  // ── Bore hole — HANYA jika toggle bore ON ──
+  if(showBore){
+    s+=`<circle cx="${cx}" cy="${cy}" r="${boreR}" fill="${boreC}" stroke="${boreS}" stroke-width=".9"/>`;
+  }
+
+  // ── Center cross (selalu ada) ──
+  const cs=Math.max(showBore?boreR*.7:8, 6);
+  s+=`<line x1="${cx-cs}" y1="${cy}" x2="${cx+cs}" y2="${cy}" stroke="${ac}" stroke-width=".5"/>`;
+  s+=`<line x1="${cx}" y1="${cy-cs}" x2="${cx}" y2="${cy+cs}" stroke="${ac}" stroke-width=".5"/>`;
+
+  // ── TDC marker (selalu ada di print) ──
+  s+=`<line x1="${cx}" y1="${cy-outerR-3}" x2="${cx}" y2="${cy-outerR-14}" stroke="${ac}" stroke-width=".9"/>`;
+  s+=`<polygon points="${cx},${cy-outerR-3} ${cx-3},${cy-outerR-9} ${cx+3},${cy-outerR-9}" fill="${ac}"/>`;
+  s+=`<text x="${cx}" y="${cy-outerR-18}" fill="${ac}" font-family="Arial,sans-serif" font-size="7.5" text-anchor="middle" font-weight="bold">TDC / 0°</text>`;
+
+  // ── Tooth tick marks per slot ──
+  for(let deg=0;deg<360;deg+=spacing){
+    const rad=(deg*dS-90)*Math.PI/180;
+    s+=`<line x1="${cx+Math.cos(rad)*(outerR+1.5)}" y1="${cy+Math.sin(rad)*(outerR+1.5)}" x2="${cx+Math.cos(rad)*(outerR+6)}" y2="${cy+Math.sin(rad)*(outerR+6)}" stroke="${dim}" stroke-width=".35" opacity=".6"/>`;
+  }
+
+  // ── DIMENSIONS (baca state saat ini) ──
+  if(showDim){
+    // 1. Outer diameter — garis atas
+    const dimY=cy-outerR-26;
+    s+=`<line x1="${cx-outerR}" y1="${dimY}" x2="${cx+outerR}" y2="${dimY}" stroke="${dim}" stroke-width=".5"/>`;
+    s+=`<line x1="${cx-outerR}" y1="${dimY-4}" x2="${cx-outerR}" y2="${cy-outerR}" stroke="${dim}" stroke-width=".35" stroke-dasharray="3,2"/>`;
+    s+=`<line x1="${cx+outerR}" y1="${dimY-4}" x2="${cx+outerR}" y2="${cy-outerR}" stroke="${dim}" stroke-width=".35" stroke-dasharray="3,2"/>`;
+    s+=`<polygon points="${cx-outerR},${dimY} ${cx-outerR+5},${dimY-2} ${cx-outerR+5},${dimY+2}" fill="${dim}"/>`;
+    s+=`<polygon points="${cx+outerR},${dimY} ${cx+outerR-5},${dimY-2} ${cx+outerR-5},${dimY+2}" fill="${dim}"/>`;
+    s+=`<text x="${cx}" y="${dimY-4}" fill="${dim}" font-family="Arial,sans-serif" font-size="7.5" text-anchor="middle" font-weight="bold">Ø${p.outerDiam}mm (OD)</text>`;
+
+    // 2. Body disc OD — garis kanan atas
+    const bdDimX=cx+outerR+22;
+    s+=`<line x1="${bdDimX}" y1="${cy-innerR}" x2="${bdDimX}" y2="${cy+innerR}" stroke="${dim}" stroke-width=".5"/>`;
+    s+=`<line x1="${cx+outerR}" y1="${cy-innerR}" x2="${bdDimX+4}" y2="${cy-innerR}" stroke="${dim}" stroke-width=".35" stroke-dasharray="3,2"/>`;
+    s+=`<line x1="${cx+outerR}" y1="${cy+innerR}" x2="${bdDimX+4}" y2="${cy+innerR}" stroke="${dim}" stroke-width=".35" stroke-dasharray="3,2"/>`;
+    s+=`<polygon points="${bdDimX},${cy-innerR} ${bdDimX-2},${cy-innerR+5} ${bdDimX+2},${cy-innerR+5}" fill="${dim}"/>`;
+    s+=`<polygon points="${bdDimX},${cy+innerR} ${bdDimX-2},${cy+innerR-5} ${bdDimX+2},${cy+innerR-5}" fill="${dim}"/>`;
+    s+=`<text x="${bdDimX+8}" y="${cy}" fill="${dim}" font-family="Arial,sans-serif" font-size="6.5" text-anchor="start" dominant-baseline="middle" transform="rotate(90,${bdDimX+8},${cy})">Ø${p.bodyDiscDiam.toFixed(1)}mm (body disc)</text>`;
+
+    // 3. Bore — garis kiri (hanya jika bore on)
+    if(showBore){
+      const boreDimX=cx-outerR-22;
+      s+=`<line x1="${boreDimX}" y1="${cy-boreR}" x2="${boreDimX}" y2="${cy+boreR}" stroke="${dim}" stroke-width=".5"/>`;
+      s+=`<line x1="${cx-boreR}" y1="${cy-boreR}" x2="${boreDimX-4}" y2="${cy-boreR}" stroke="${dim}" stroke-width=".35" stroke-dasharray="3,2"/>`;
+      s+=`<line x1="${cx-boreR}" y1="${cy+boreR}" x2="${boreDimX-4}" y2="${cy+boreR}" stroke="${dim}" stroke-width=".35" stroke-dasharray="3,2"/>`;
+      s+=`<polygon points="${boreDimX},${cy-boreR} ${boreDimX-2},${cy-boreR+5} ${boreDimX+2},${cy-boreR+5}" fill="${dim}"/>`;
+      s+=`<polygon points="${boreDimX},${cy+boreR} ${boreDimX-2},${cy+boreR-5} ${boreDimX+2},${cy+boreR-5}" fill="${dim}"/>`;
+      s+=`<text x="${boreDimX-8}" y="${cy}" fill="${dim}" font-family="Arial,sans-serif" font-size="6.5" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90,${boreDimX-8},${cy})">Ø${p.boreDiam}mm (bore)</text>`;
+    }
+
+    // 4. Tooth height — panah radial
+    const thAng=(-45)*Math.PI/180;
+    const tx1=cx+Math.cos(thAng)*innerR, ty1=cy+Math.sin(thAng)*innerR;
+    const tx2=cx+Math.cos(thAng)*outerR, ty2=cy+Math.sin(thAng)*outerR;
+    s+=`<line x1="${tx1}" y1="${ty1}" x2="${tx2}" y2="${ty2}" stroke="${rd}" stroke-width=".7"/>`;
+    s+=`<polygon points="${tx2},${ty2} ${tx2-3*Math.cos(thAng+.5)},${ty2-3*Math.sin(thAng+.5)} ${tx2-3*Math.cos(thAng-.5)},${ty2-3*Math.sin(thAng-.5)}" fill="${rd}"/>`;
+    const tmx=(tx1+tx2)/2+7*Math.cos(thAng-Math.PI/2), tmy=(ty1+ty2)/2+7*Math.sin(thAng-Math.PI/2);
+    s+=`<text x="${tmx}" y="${tmy}" fill="${rd}" font-family="Arial,sans-serif" font-size="6.5" text-anchor="middle">${p.toothHeight}mm</text>`;
+
+    // 5. Gap angle arc + label
+    const gArcR=outerR+13;
+    const ga1r=gvsd*Math.PI/180, ga2r=gved*Math.PI/180;
+    const gax1=cx+Math.cos(ga1r)*gArcR, gay1=cy+Math.sin(ga1r)*gArcR;
+    const gax2=cx+Math.cos(ga2r)*gArcR, gay2=cy+Math.sin(ga2r)*gArcR;
+    const gaLarge=(spacing*p.missing)>180?1:0;
+    s+=`<path d="M ${gax1} ${gay1} A ${gArcR} ${gArcR} 0 ${gaLarge} ${isCCW?0:1} ${gax2} ${gay2}" fill="none" stroke="${rd}" stroke-width=".6"/>`;
+    const gaMidR=((gvsd+gved)/2)*Math.PI/180;
+    s+=`<text x="${cx+Math.cos(gaMidR)*(gArcR+8)}" y="${cy+Math.sin(gaMidR)*(gArcR+8)}" fill="${rd}" font-family="Arial,sans-serif" font-size="6" text-anchor="middle">${(spacing*(p.missing+1)).toFixed(1)}°</text>`;
+
+    // 6. Spacing arc (first tooth)
+    const spArcR=outerR+10;
+    const sp1r=(-90)*Math.PI/180, sp2r=(-90+spacing*dS)*Math.PI/180;
+    const spx1=cx+Math.cos(sp1r)*spArcR,spy1=cy+Math.sin(sp1r)*spArcR;
+    const spx2=cx+Math.cos(sp2r)*spArcR,spy2=cy+Math.sin(sp2r)*spArcR;
+    s+=`<path d="M ${spx1} ${spy1} A ${spArcR} ${spArcR} 0 0 ${isCCW?0:1} ${spx2} ${spy2}" fill="none" stroke="${dim}" stroke-width=".5"/>`;
+    const spMidR=(-90+spacing*dS*.5)*Math.PI/180;
+    s+=`<text x="${cx+Math.cos(spMidR)*(spArcR+8)}" y="${cy+Math.sin(spMidR)*(spArcR+8)}" fill="${dim}" font-family="Arial,sans-serif" font-size="6" text-anchor="middle">${spacing.toFixed(2)}°</text>`;
+  }
+
+  // ── Title block ──
+  if(showTitle){
+    const tbY=ph-margin*.5-titleH+4;
+    s+=`<rect x="${margin*.5}" y="${tbY}" width="${pw-margin}" height="${titleH-6}" fill="#f7f7f7" stroke="#444" stroke-width=".8"/>`;
+    s+=`<line x1="${margin*.5}" y1="${tbY+14*PM}" x2="${pw-margin*.5}" y2="${tbY+14*PM}" stroke="#aaa" stroke-width=".4"/>`;
+    // Title
+    s+=`<text x="${margin}" y="${tbY+10}" fill="#000" font-family="Arial,sans-serif" font-size="10" font-weight="bold">TRIGGER WHEEL — ${p.total}-${p.missing} PATTERN</text>`;
+    // Row 1 specs
+    s+=`<text x="${margin}" y="${tbY+14*PM+8}" fill="#222" font-family="Arial Narrow,Arial,sans-serif" font-size="7">OD: ${p.outerDiam}mm  |  Body Disc: ${p.bodyDiscDiam.toFixed(1)}mm  |  Bore: ${showBore?p.boreDiam+'mm':'OFF'}  |  Tooth H: ${p.toothHeight}mm  |  Spacing: ${(360/p.total).toFixed(2)}°  |  Gap: ${(spacing*(p.missing+1)).toFixed(2)}°</text>`;
+    // Row 2 specs
+    s+=`<text x="${margin}" y="${tbY+14*PM+17}" fill="#555" font-family="Arial Narrow,Arial,sans-serif" font-size="6.5">Teeth: ${p.total-p.missing}/${p.total}  |  Ratio: ${Math.round(p.toothRatio*100)}%  |  HIGH: ${(spacing*p.toothRatio).toFixed(2)}°  |  LOW: ${(spacing*(1-p.toothRatio)).toFixed(2)}°  |  Dir: ${p.rotDir.toUpperCase()}  |  Spoke: ${p.currentPattern.toUpperCase()}</text>`;
+    // Scale ref bar 10mm
+    const scaleBarPx=10*sf, barX=pw-margin-scaleBarPx-5, barY=tbY+14*PM+10;
+    s+=`<line x1="${barX}" y1="${barY}" x2="${barX+scaleBarPx}" y2="${barY}" stroke="#000" stroke-width="1.5"/>`;
+    s+=`<line x1="${barX}" y1="${barY-4}" x2="${barX}" y2="${barY+4}" stroke="#000" stroke-width="1"/>`;
+    s+=`<line x1="${barX+scaleBarPx}" y1="${barY-4}" x2="${barX+scaleBarPx}" y2="${barY+4}" stroke="#000" stroke-width="1"/>`;
+    s+=`<text x="${barX+scaleBarPx/2}" y="${barY-5}" fill="#000" font-family="Arial,sans-serif" font-size="6.5" text-anchor="middle">10mm ref</text>`;
+    // Date & URL
+    const now=new Date(), ds=now.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
+    s+=`<text x="${pw-margin}" y="${tbY+titleH-10}" fill="#888" font-family="Arial,sans-serif" font-size="6" text-anchor="end">${ds} | dhans62.github.io/trigger-wheel-generator | Scale ${scaleSel==='fit'?'Fit':scaleSel+':1'}</text>`;
+  }
+
+  const fullSVG=`<?xml version="1.0" encoding="UTF-8"?><svg width="${pw}" height="${ph}" viewBox="0 0 ${pw} ${ph}" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>Print TW ${p.total}-${p.missing}</title><style>@page{size:${paperSel};margin:0;}*{margin:0;padding:0;}body{background:#fff;}.ctrl{position:fixed;top:10px;right:10px;display:flex;gap:8px;z-index:99;}.ctrl button{padding:7px 14px;font-family:Arial,sans-serif;font-size:12px;font-weight:bold;cursor:pointer;border:none;border-radius:3px;}.p{background:#2563eb;color:#fff;}.c{background:#ef4444;color:#fff;}@media print{.ctrl{display:none;}}</style></head><body><div class="ctrl"><button class="p" onclick="window.print()">Print / Save PDF</button><button class="c" onclick="window.close()">Tutup</button></div>${fullSVG}</body></html>`);
+  win.document.close();
+}
+
+// ── PROTRACTOR ────────────────────────────────────────
+function exportProtractor() {
+  const p         = getParams();
+  const interval  = parseInt(document.getElementById('protInterval').value);
+  const showLabel = document.getElementById('tog-protlabel').classList.contains('on');
+  const showTeeth = document.getElementById('tog-protteeth').classList.contains('on');
+  const showCross = document.getElementById('tog-protcross').classList.contains('on');
+
+  // Paper A4 landscape untuk busur besar
+  const PM   = 3.7795275591;
+  const pw   = 297*PM, ph = 210*PM; // A4 landscape
+  const margin = 12*PM;
+  const maxR   = Math.min(pw, ph)/2 - margin - 20*PM;
+
+  // Scale: fit OD ke area tersedia
+  const sf    = maxR / (p.outerDiam/2);
+  const outerR = (p.outerDiam/2) * sf;
+  const innerR = p.fullMode ? (p.bodyDiscDiam/2)*sf : outerR - p.toothHeight*sf;
+  const boreR  = (p.boreDiam/2) * sf;
+  const cx = pw/2, cy = ph/2;
+  const spacing = 360/p.total;
+  const gapSlot = Math.round(p.gapPos/spacing);
+  const isCCW   = p.rotDir==='ccw', dS=isCCW?-1:1;
+
+  // Colors
+  const bg='#fff', ac='#000', dimC='#0033cc', rdC='#cc0000', grC='#888';
+
+  let s = `<rect width="${pw}" height="${ph}" fill="${bg}"/>`;
+
+  // ── Lingkaran referensi ──
+  // Outer circle (batas OD)
+  s += `<circle cx="${cx}" cy="${cy}" r="${outerR}" fill="none" stroke="${ac}" stroke-width="0.8"/>`;
+  // Inner circle (body disc)
+  s += `<circle cx="${cx}" cy="${cy}" r="${innerR}" fill="none" stroke="${dimC}" stroke-width="0.5" stroke-dasharray="4,3"/>`;
+  // Bore circle
+  s += `<circle cx="${cx}" cy="${cy}" r="${boreR}" fill="none" stroke="${grC}" stroke-width="0.5" stroke-dasharray="3,2"/>`;
+
+  // ── Degree marks ──
+  for(let deg = 0; deg < 360; deg += interval) {
+    const rad    = (deg * dS - 90) * Math.PI/180;
+    const isMaj  = deg % 90 === 0;
+    const isMed  = deg % 30 === 0;
+    const isSlot = Math.abs(deg % spacing) < 0.01 || Math.abs((deg % spacing) - spacing) < 0.01;
+
+    // Tick length
+    const tickOut = outerR;
+    const tickIn  = isMaj  ? outerR - 14*PM :
+                    isMed  ? outerR - 8*PM  :
+                    isSlot ? outerR - 10*PM :
+                             outerR - 5*PM;
+    const tickColor = isSlot ? rdC : isMaj ? ac : dimC;
+    const tickW     = isMaj ? 1.2 : isSlot ? 1.0 : 0.4;
+
+    s += `<line x1="${cx+Math.cos(rad)*tickIn}" y1="${cy+Math.sin(rad)*tickIn}" x2="${cx+Math.cos(rad)*tickOut}" y2="${cy+Math.sin(rad)*tickOut}" stroke="${tickColor}" stroke-width="${tickW}"/>`;
+
+    // Label derajat
+    if(showLabel && (isMaj || isMed || (interval >= 10 && isSlot))) {
+      const labelR = outerR + 8*PM;
+      const lx = cx + Math.cos(rad)*labelR;
+      const ly = cy + Math.sin(rad)*labelR;
+      const fs = isMaj ? 10 : 7;
+      s += `<text x="${lx}" y="${ly}" fill="${isMaj?ac:dimC}" font-family="Arial,sans-serif" font-size="${fs}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${deg*dS},${lx},${ly})">${deg}°</text>`;
+    }
+  }
+
+  // ── Radial lines untuk setiap slot gigi ──
+  const spacing360 = 360/p.total;
+  for(let i = 0; i < p.total; i++) {
+    let isMissing = false;
+    for(let m = 0; m < p.missing; m++) {
+      if(i === (gapSlot+m)%p.total) { isMissing = true; break; }
+    }
+
+    const slotAngle = (i * spacing360 * dS - 90) * Math.PI/180;
+    const color     = isMissing ? rdC : dimC;
+    const dasharray = isMissing ? 'none' : '5,3';
+
+    // Radial line dari bore ke outer
+    s += `<line x1="${cx+Math.cos(slotAngle)*boreR}" y1="${cy+Math.sin(slotAngle)*boreR}" x2="${cx+Math.cos(slotAngle)*outerR}" y2="${cy+Math.sin(slotAngle)*outerR}" stroke="${color}" stroke-width="${isMissing?1:.5}" stroke-dasharray="${dasharray}" opacity=".7"/>`;
+
+    // Label slot
+    if(showTeeth && !isMissing) {
+      const lr = (outerR + innerR)/2;
+      const midAngle = ((i + 0.5) * spacing360 * dS - 90) * Math.PI/180;
+      s += `<text x="${cx+Math.cos(midAngle)*lr}" y="${cy+Math.sin(midAngle)*lr}" fill="${dimC}" font-family="Arial,sans-serif" font-size="7" text-anchor="middle" dominant-baseline="middle" opacity=".8">${i+1}</text>`;
+    }
+  }
+
+  // ── Gap region shading ──
+  const gvsd = gapSlot * spacing360 * dS - 90;
+  const gved = gvsd + spacing360 * p.missing * dS;
+  const gsr  = gvsd*Math.PI/180, ger = gved*Math.PI/180;
+  const gxo1=cx+Math.cos(gsr)*outerR, gyo1=cy+Math.sin(gsr)*outerR;
+  const gxo2=cx+Math.cos(ger)*outerR, gyo2=cy+Math.sin(ger)*outerR;
+  const gxi1=cx+Math.cos(gsr)*innerR, gyi1=cy+Math.sin(gsr)*innerR;
+  const gxi2=cx+Math.cos(ger)*innerR, gyi2=cy+Math.sin(ger)*innerR;
+  const gL=(spacing360*p.missing)>180?1:0, gSw=isCCW?0:1;
+  s += `<path d="M ${gxi1} ${gyi1} L ${gxo1} ${gyo1} A ${outerR} ${outerR} 0 ${gL} ${gSw} ${gxo2} ${gyo2} L ${gxi2} ${gyi2} A ${innerR} ${innerR} 0 ${gL} ${gSw?0:1} ${gxi1} ${gyi1} Z" fill="rgba(200,0,0,.08)" stroke="${rdC}" stroke-width=".8"/>`;
+
+  // GAP label
+  const gMidR = ((gvsd+gved)/2)*Math.PI/180;
+  s += `<text x="${cx+Math.cos(gMidR)*(outerR+innerR)/2}" y="${cy+Math.sin(gMidR)*(outerR+innerR)/2}" fill="${rdC}" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" dominant-baseline="middle" font-weight="bold">GAP</text>`;
+
+  // ── TDC marker ──
+  s += `<line x1="${cx}" y1="${cy-outerR-3}" x2="${cx}" y2="${cy-outerR-14}" stroke="${ac}" stroke-width="1.2"/>`;
+  s += `<polygon points="${cx},${cy-outerR-3} ${cx-4},${cy-outerR-9} ${cx+4},${cy-outerR-9}" fill="${ac}"/>`;
+  s += `<text x="${cx}" y="${cy-outerR-18}" fill="${ac}" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" font-weight="bold">TDC / 0°</text>`;
+
+  // ── Direction label ──
+  s += `<text x="${cx}" y="${cy+innerR*0.4}" fill="${grC}" font-family="Arial,sans-serif" font-size="9" text-anchor="middle">${isCCW?'CCW':'CW'}</text>`;
+
+  // ── Crosshair center ──
+  if(showCross) {
+    const cs = boreR * 0.8;
+    s += `<line x1="${cx-cs}" y1="${cy}" x2="${cx+cs}" y2="${cy}" stroke="${ac}" stroke-width="0.7"/>`;
+    s += `<line x1="${cx}" y1="${cy-cs}" x2="${cx}" y2="${cy+cs}" stroke="${ac}" stroke-width="0.7"/>`;
+    // Circle kecil di center
+    s += `<circle cx="${cx}" cy="${cy}" r="2" fill="none" stroke="${ac}" stroke-width="0.7"/>`;
+  }
+
+  // ── Cut guide circle (untuk gunting) ──
+  s += `<circle cx="${cx}" cy="${cy}" r="${outerR+6*PM}" fill="none" stroke="#cccccc" stroke-width="0.4" stroke-dasharray="6,4"/>`;
+
+  // ── Info box pojok ──
+  const ibX = margin, ibY = margin;
+  s += `<rect x="${ibX}" y="${ibY}" width="${55*PM}" height="${38*PM}" fill="#f8f8f8" stroke="#ccc" stroke-width=".5"/>`;
+  s += `<text x="${ibX+4}" y="${ibY+9}" fill="${ac}" font-family="Arial,sans-serif" font-size="9" font-weight="bold">BUSUR TRIGGER WHEEL</text>`;
+  s += `<line x1="${ibX}" y1="${ibY+12}" x2="${ibX+55*PM}" y2="${ibY+12}" stroke="#ccc" stroke-width=".4"/>`;
+  s += `<text x="${ibX+4}" y="${ibY+20}" fill="#333" font-family="Arial,sans-serif" font-size="7">OD: ${p.outerDiam}mm  |  Teeth: ${p.total}-${p.missing}</text>`;
+  s += `<text x="${ibX+4}" y="${ibY+28}" fill="#333" font-family="Arial,sans-serif" font-size="7">Spacing: ${spacing360.toFixed(2)}°  |  Gap@: ${p.gapPos}°  |  ${isCCW?'CCW':'CW'}</text>`;
+
+  // Scale ref 10mm
+  const sbPx = 10*sf, sbX = ibX+4, sbY = ibY+36;
+  s += `<line x1="${sbX}" y1="${sbY}" x2="${sbX+sbPx}" y2="${sbY}" stroke="${ac}" stroke-width="1.2"/>`;
+  s += `<line x1="${sbX}" y1="${sbY-3}" x2="${sbX}" y2="${sbY+3}" stroke="${ac}" stroke-width=".8"/>`;
+  s += `<line x1="${sbX+sbPx}" y1="${sbY-3}" x2="${sbX+sbPx}" y2="${sbY+3}" stroke="${ac}" stroke-width=".8"/>`;
+  s += `<text x="${sbX+sbPx/2}" y="${sbY-4}" fill="${ac}" font-family="Arial,sans-serif" font-size="6" text-anchor="middle">10mm ref</text>`;
+
+  // Cara pakai (pojok kanan bawah)
+  const helpX = pw - margin - 58*PM, helpY = ph - margin - 22*PM;
+  s += `<rect x="${helpX}" y="${helpY}" width="${58*PM}" height="${22*PM}" fill="#fffde7" stroke="#e0c000" stroke-width=".5"/>`;
+  s += `<text x="${helpX+3}" y="${helpY+8}" fill="#555" font-family="Arial,sans-serif" font-size="6.5" font-weight="bold">CARA PAKAI:</text>`;
+  s += `<text x="${helpX+3}" y="${helpY+15}" fill="#555" font-family="Arial,sans-serif" font-size="6">1. Print skala 1:1  2. Gunting lingkaran luar</text>`;
+  s += `<text x="${helpX+3}" y="${helpY+21}" fill="#555" font-family="Arial,sans-serif" font-size="6">3. Tempel ke plat  4. Tandai & potong gigi</text>`;
+
+  // Watermark
+  const now = new Date();
+  s += `<text x="${pw-margin}" y="${ph-5}" fill="#ccc" font-family="Arial,sans-serif" font-size="6" text-anchor="end">${now.toLocaleDateString('id-ID')} | dhans62.github.io/trigger-wheel-generator</text>`;
+
+  const fullSVG = `<?xml version="1.0" encoding="UTF-8"?><svg width="${pw}" height="${ph}" viewBox="0 0 ${pw} ${ph}" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>Busur ${p.outerDiam}mm — ${p.total}-${p.missing}</title><style>@page{size:A4 landscape;margin:0;}*{margin:0;padding:0;}body{background:#fff;}.ctrl{position:fixed;top:10px;right:10px;display:flex;gap:8px;z-index:99;}.ctrl button{padding:7px 14px;font-family:Arial,sans-serif;font-size:12px;font-weight:bold;cursor:pointer;border:none;border-radius:3px;}.p{background:#2563eb;color:#fff;}.c{background:#ef4444;color:#fff;}@media print{.ctrl{display:none;}}</style></head><body><div class="ctrl"><button class="p" onclick="window.print()">Print / Save PDF</button><button class="c" onclick="window.close()">Tutup</button></div>${fullSVG}</body></html>`);
+  win.document.close();
+}
+
+// ── INIT ─────────────────────────────────────────────
+update();
+window.addEventListener('load',()=>setTimeout(applyViewport,50));
+</script>
+</body>
+</html>
